@@ -24,15 +24,12 @@ function Subway() {
   const enemyMeshesRef = useRef([]);
   const clockRef = useRef(new THREE.Clock());
 
-  // Audio references
   const startSoundRef = useRef();
   const coinSoundRef = useRef();
 
-  // GLTF loader reference at top-level
   const gltfLoaderRef = useRef(new GLTFLoader());
 
   useEffect(() => {
-    // --- Load Best Score ---
     const storedBestScore = localStorage.getItem('bestScore');
     if (storedBestScore) {
       setBestScore(parseInt(storedBestScore));
@@ -40,19 +37,15 @@ function Subway() {
       localStorage.setItem('bestScore', 0);
     }
 
-    // --- Setup Three.js Scene and Cannon.js World ---
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // --- Load single panoramic image ---
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load('/skybox/panorama.jpg', (texture) => {
-      // If the panorama is equirectangular, set mapping accordingly
       texture.mapping = THREE.EquirectangularReflectionMapping;
       scene.background = texture;
     });
 
-    // Fog
     scene.fog = new THREE.Fog(0xffffff, 1, 150);
 
     const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82, 0) });
@@ -76,11 +69,9 @@ function Subway() {
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enabled = false;
 
-    // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
     scene.add(ambientLight);
 
-    // --- Player Setup ---
     const player = new THREE.Mesh(
       new THREE.BoxGeometry(0.5, 0.5, 0.5),
       new THREE.MeshStandardMaterial({ color: 0xff0000 })
@@ -100,7 +91,6 @@ function Subway() {
     playerBodyRef.current = playerBody;
     playerBody.linearDamping = 0.1;
 
-    // --- Ground Setup ---
     const groundShape = new CANNON.Box(new CANNON.Vec3(2, 0.1, 2000));
     const groundBody = new CANNON.Body({ mass: 0, shape: groundShape });
     groundBody.position.set(0, 0, -1000);
@@ -117,7 +107,6 @@ function Subway() {
     groundMesh.position.set(0, 0, -1000);
     scene.add(groundMesh);
 
-    // --- Spawning Points ---
     function spawnPoint() {
       const lanes = [-1, 0, 1];
       const randomLane = lanes[Math.floor(Math.random() * lanes.length)];
@@ -147,7 +136,6 @@ function Subway() {
       );
     }
 
-    // --- Fence-Like Enemy ---
     function createFenceMesh() {
       const fenceGroup = new THREE.Group();
       const barMaterial = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, metalness:0.2, roughness:0.7 });
@@ -204,13 +192,11 @@ function Subway() {
       setGameOver(false);
       setStartGame(false);
 
-      // Remove points
       pointBodiesRef.current.forEach((pb) => world.removeBody(pb));
       pointMeshesRef.current.forEach((pm) => scene.remove(pm));
       pointBodiesRef.current = [];
       pointMeshesRef.current = [];
 
-      // Remove enemies
       enemyBodiesRef.current.forEach((eb) => world.removeBody(eb));
       enemyMeshesRef.current.forEach((em) => scene.remove(em));
       enemyBodiesRef.current = [];
@@ -346,7 +332,6 @@ function Subway() {
 
     animate();
 
-    // Cleanup on unmount
     return () => {
       cancelAnimationFrame(requestRef.current);
       document.body.removeChild(renderer.domElement);
